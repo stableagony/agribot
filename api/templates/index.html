@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriBot — Plant Disease Intelligence Platform</title>
+    <meta name="description" content="Enterprise-grade CNN plant pathology detection powered by PyTorch deep learning">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Ambient Background Orbs -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="app-shell">
+
+        <!-- TOP HEADER -->
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C7 2 3 6 3 11c0 3.5 1.5 6.5 4 8.5V22h10v-2.5c2.5-2 4-5 4-8.5 0-5-4-9-9-9z" fill="url(#leaf-grad)"/>
+                        <defs><linearGradient id="leaf-grad" x1="3" y1="2" x2="21" y2="22" gradientUnits="userSpaceOnUse"><stop stop-color="#10B981"/><stop offset="1" stop-color="#059669"/></linearGradient></defs>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">AgriBot</span>
+                    <span class="brand-tag">Plant Intelligence Platform</span>
+                </div>
+            </div>
+
+            <nav class="tab-nav">
+                <button class="tab-btn active" data-tab="studio">
+                    <span class="tab-icon">◎</span>
+                    <span>Classifier Studio</span>
+                </button>
+                <button class="tab-btn" data-tab="neural">
+                    <span class="tab-icon">⬡</span>
+                    <span>Neural Architecture</span>
+                </button>
+                <button class="tab-btn" data-tab="guide">
+                    <span class="tab-icon">◈</span>
+                    <span>Plant Encyclopedia</span>
+                </button>
+                <button class="tab-btn" data-tab="telemetry">
+                    <span class="tab-icon">◈</span>
+                    <span>Telemetry</span>
+                </button>
+            </nav>
+
+            <div class="api-status" id="apiStatus">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusLabel">Connecting...</span>
+            </div>
+        </header>
+
+        <!-- PAGE CONTENT -->
+        <main class="page-content">
+
+            <!-- ══════════════════════════════════════════════
+                 TAB 1: CLASSIFIER STUDIO
+            ══════════════════════════════════════════════ -->
+            <div class="tab-page active" id="page-studio">
+                <div class="studio-grid">
+
+                    <!-- Left Panel -->
+                    <div class="left-panel">
+
+                        <!-- Upload Panel -->
+                        <div class="glass-card upload-card">
+                            <div class="card-label">Image Source</div>
+
+                            <div class="dropzone" id="dropzone">
+                                <input type="file" id="fileInput" accept="image/*" class="file-hidden">
+                                <div class="dz-idle" id="dzIdle">
+                                    <div class="upload-gfx">
+                                        <div class="upload-circle">
+                                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                                                <path d="M4 16l4-4 4 4m0 0l4-4 4 4M12 12V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <p class="dz-title">Drop crop image here</p>
+                                    <p class="dz-sub">PNG, JPG, WEBP · Up to 10MB</p>
+                                    <button class="btn-ghost" onclick="document.getElementById('fileInput').click()">Browse files</button>
+                                </div>
+                                <div class="dz-preview hidden" id="dzPreview">
+                                    <img id="previewImg" alt="Crop sample">
+                                    <canvas id="attentionCanvas" class="attention-layer hidden"></canvas>
+                                    <button class="clear-btn" id="clearBtn">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="white" stroke-width="2.5" stroke-linecap="round"/></svg>
+                                    </button>
+                                    <div class="img-badge" id="imgBadge">Ready to Analyse</div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="action-row">
+                                <button class="btn-primary" id="runBtn" disabled>
+                                    <span class="btn-inner">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M5 3l14 9-14 9V3z" fill="currentColor"/></svg>
+                                        Run Analysis
+                                    </span>
+                                    <span class="btn-loading hidden">
+                                        <span class="spinner-sm"></span>
+                                        Inferring...
+                                    </span>
+                                </button>
+                                <button class="btn-secondary" id="sampleBtn">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" stroke="currentColor" stroke-width="1.5"/></svg>
+                                    Random Sample
+                                </button>
+                            </div>
+
+                            <!-- Settings Row -->
+                            <div class="settings-panel">
+                                <div class="setting-row">
+                                    <div class="setting-label">
+                                        <span>Sensitivity Threshold</span>
+                                        <span class="setting-val" id="threshLabel">25%</span>
+                                    </div>
+                                    <div class="slider-track">
+                                        <input type="range" id="threshSlider" min="10" max="60" value="25">
+                                        <div class="slider-fill" id="sliderFill"></div>
+                                    </div>
+                                </div>
+                                <div class="setting-row toggle-row">
+                                    <span class="setting-label">Attention Map Overlay</span>
+                                    <label class="toggle">
+                                        <input type="checkbox" id="attentionToggle">
+                                        <span class="track"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Presets -->
+                        <div class="glass-card presets-card">
+                            <div class="card-label">Quick Test Presets</div>
+                            <div class="presets-grid">
+                                <button class="preset-btn" data-preset="tomato_early">
+                                    <span class="preset-emoji">🍅</span>
+                                    <span class="preset-name">Tomato Early Blight</span>
+                                </button>
+                                <button class="preset-btn" data-preset="corn_rust">
+                                    <span class="preset-emoji">🌽</span>
+                                    <span class="preset-name">Corn Common Rust</span>
+                                </button>
+                                <button class="preset-btn" data-preset="rice_spot">
+                                    <span class="preset-emoji">🍚</span>
+                                    <span class="preset-name">Rice Brown Spot</span>
+                                </button>
+                                <button class="preset-btn" data-preset="wheat_rust">
+                                    <span class="preset-emoji">🌾</span>
+                                    <span class="preset-name">Wheat Yellow Rust</span>
+                                </button>
+                                <button class="preset-btn" data-preset="soy_healthy">
+                                    <span class="preset-emoji">🫘</span>
+                                    <span class="preset-name">Healthy Soybean</span>
+                                </button>
+                                <button class="preset-btn" data-preset="sunflower">
+                                    <span class="preset-emoji">🌻</span>
+                                    <span class="preset-name">Sunflower Mildew</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel -->
+                    <div class="right-panel">
+                        <!-- Empty state -->
+                        <div class="glass-card result-card idle-state" id="emptyState">
+                            <div class="idle-inner">
+                                <div class="idle-rings">
+                                    <div class="ring r1"></div>
+                                    <div class="ring r2"></div>
+                                    <div class="ring r3"></div>
+                                    <div class="idle-icon">🔬</div>
+                                </div>
+                                <h3>Awaiting Classification</h3>
+                                <p>Upload a leaf or seed photograph, or select a quick-test preset to run the CNN inference pipeline.</p>
+                                <div class="idle-chips">
+                                    <span class="model-chip">PlantSeedNet v2.4</span>
+                                    <span class="model-chip">15 Classes</span>
+                                    <span class="model-chip">PyTorch CPU</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loading state -->
+                        <div class="glass-card result-card hidden" id="loadingState">
+                            <div class="loading-inner">
+                                <div class="radar">
+                                    <div class="radar-sweep"></div>
+                                    <div class="radar-dot"></div>
+                                </div>
+                                <h3>Extracting Features...</h3>
+                                <p>Forward pass through 4 convolutional blocks</p>
+                                <div class="loading-steps">
+                                    <div class="step active" id="lstep1">Conv Block 1-2 ···</div>
+                                    <div class="step" id="lstep2">Conv Block 3-4 ···</div>
+                                    <div class="step" id="lstep3">Softmax Output ···</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results panel -->
+                        <div class="results-panel hidden" id="resultsPanel">
+                            <!-- Verification stripe -->
+                            <div class="verify-stripe" id="verifyStripe">
+                                <span id="verifyIcon">✓</span>
+                                <span id="verifyText">Valid Plant Sample Verified</span>
+                            </div>
+
+                            <!-- Primary diagnosis card -->
+                            <div class="glass-card diagnosis-card">
+                                <div class="diag-header">
+                                    <div>
+                                        <div class="crop-label" id="cropLabel">VEGETABLE FOLIAGE</div>
+                                        <div class="genus-name" id="genusName">Solanum (Tomato)</div>
+                                    </div>
+                                    <div class="health-badge" id="healthBadge">Healthy</div>
+                                </div>
+                                <div class="diag-condition">
+                                    <span class="cond-key">Diagnosed Condition</span>
+                                    <span class="cond-val" id="condVal">Healthy Seed Batch</span>
+                                </div>
+                            </div>
+
+                            <!-- Confidence meter -->
+                            <div class="glass-card meter-card">
+                                <div class="meter-top">
+                                    <span class="meter-label">Classification Certainty</span>
+                                    <span class="meter-pct" id="confPct">—</span>
+                                </div>
+                                <div class="meter-bar">
+                                    <div class="meter-fill" id="confFill"></div>
+                                </div>
+                                <div class="meter-quality" id="qualityLabel">—</div>
+                            </div>
+
+                            <!-- Top-3 Candidates -->
+                            <div class="glass-card candidates-card">
+                                <div class="card-label">Top Candidate Classes</div>
+                                <div class="candidates-list" id="candidatesList"></div>
+                            </div>
+
+                            <!-- Recommendations -->
+                            <div class="glass-card recs-card">
+                                <div class="card-label recs-label">
+                                    <span>Agronomic Action Protocol</span>
+                                    <span class="recs-icon">📋</span>
+                                </div>
+                                <ul class="recs-list" id="recsList"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 TAB 2: NEURAL ARCHITECTURE
+            ══════════════════════════════════════════════ -->
+            <div class="tab-page hidden" id="page-neural">
+                <div class="neural-grid">
+                    <div class="glass-card arch-intro">
+                        <div class="card-label">Model Architecture</div>
+                        <h2>PlantSeedNet Deep CNN</h2>
+                        <p class="arch-desc">Custom convolutional neural network designed for 128×128 plant leaf and seed pathology classification. Features progressive channel expansion with batch normalization and global average pooling.</p>
+
+                        <div class="pipeline">
+                            <div class="pipe-node">
+                                <div class="pipe-icon">📷</div>
+                                <div class="pipe-label">Input</div>
+                                <div class="pipe-sub">128×128×3</div>
+                            </div>
+                            <div class="pipe-arrow">→</div>
+                            <div class="pipe-node">
+                                <div class="pipe-icon">⬛</div>
+                                <div class="pipe-label">Conv Block 1</div>
+                                <div class="pipe-sub">32ch + BN + Pool</div>
+                            </div>
+                            <div class="pipe-arrow">→</div>
+                            <div class="pipe-node">
+                                <div class="pipe-icon">⬛</div>
+                                <div class="pipe-label">Conv Block 2</div>
+                                <div class="pipe-sub">64ch + BN + Pool</div>
+                            </div>
+                            <div class="pipe-arrow">→</div>
+                            <div class="pipe-node">
+                                <div class="pipe-icon">⬛</div>
+                                <div class="pipe-label">Conv Block 3</div>
+                                <div class="pipe-sub">128ch + Dropout</div>
+                            </div>
+                            <div class="pipe-arrow">→</div>
+                            <div class="pipe-node">
+                                <div class="pipe-icon">⬛</div>
+                                <div class="pipe-label">Conv Block 4</div>
+                                <div class="pipe-sub">256ch + GAP</div>
+                            </div>
+                            <div class="pipe-arrow">→</div>
+                            <div class="pipe-node accent-node">
+                                <div class="pipe-icon">🎯</div>
+                                <div class="pipe-label">Classifier</div>
+                                <div class="pipe-sub">15 Classes</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="neural-charts">
+                        <div class="glass-card chart-card">
+                            <div class="card-label">Training History</div>
+                            <div class="chart-wrap">
+                                <img src="/models/training_history.png" alt="Training curves"
+                                     onerror="this.parentElement.innerHTML='<div class=chart-placeholder>Training history chart will appear here after model training</div>'">
+                            </div>
+                        </div>
+                        <div class="glass-card chart-card">
+                            <div class="card-label">Confusion Matrix</div>
+                            <div class="chart-wrap">
+                                <img src="/models/confusion_matrix.png" alt="Confusion matrix"
+                                     onerror="this.parentElement.innerHTML='<div class=chart-placeholder>Run python -m src.evaluate to generate the confusion matrix</div>'">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model stats row -->
+                    <div class="arch-stats">
+                        <div class="arch-stat">
+                            <span class="arch-stat-val">2.1M</span>
+                            <span class="arch-stat-key">Parameters</span>
+                        </div>
+                        <div class="arch-stat">
+                            <span class="arch-stat-val">128px</span>
+                            <span class="arch-stat-key">Input Resolution</span>
+                        </div>
+                        <div class="arch-stat">
+                            <span class="arch-stat-val">4</span>
+                            <span class="arch-stat-key">Conv Blocks</span>
+                        </div>
+                        <div class="arch-stat">
+                            <span class="arch-stat-val">15</span>
+                            <span class="arch-stat-key">Output Classes</span>
+                        </div>
+                        <div class="arch-stat">
+                            <span class="arch-stat-val">86.7%</span>
+                            <span class="arch-stat-key">Val Accuracy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 TAB 3: PLANT ENCYCLOPEDIA
+            ══════════════════════════════════════════════ -->
+            <div class="tab-page hidden" id="page-guide">
+                <div class="guide-layout">
+                    <div class="guide-topbar">
+                        <div>
+                            <h2>Plant & Pathology Encyclopedia</h2>
+                            <p>Click any card to view detailed treatment protocols and agronomic guidance.</p>
+                        </div>
+                        <div class="guide-controls">
+                            <div class="search-box">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                                <input type="text" id="encSearch" placeholder="Search genus, disease, crop...">
+                            </div>
+                            <div class="filter-tabs">
+                                <button class="filter-btn active" data-filter="all">All</button>
+                                <button class="filter-btn" data-filter="healthy">Healthy</button>
+                                <button class="filter-btn" data-filter="disease">Diseased</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="enc-grid" id="encGrid"></div>
+                </div>
+            </div>
+
+            <!-- ══════════════════════════════════════════════
+                 TAB 4: TELEMETRY
+            ══════════════════════════════════════════════ -->
+            <div class="tab-page hidden" id="page-telemetry">
+                <div class="telem-grid">
+                    <div class="telem-stats">
+                        <div class="telem-card">
+                            <div class="telem-icon">⚡</div>
+                            <div class="telem-val" id="avgLatency">—</div>
+                            <div class="telem-key">Avg Inference (ms)</div>
+                        </div>
+                        <div class="telem-card">
+                            <div class="telem-icon">🎯</div>
+                            <div class="telem-val">86.67%</div>
+                            <div class="telem-key">Validation Accuracy</div>
+                        </div>
+                        <div class="telem-card">
+                            <div class="telem-icon">📊</div>
+                            <div class="telem-val" id="totalRuns">0</div>
+                            <div class="telem-key">Total Predictions</div>
+                        </div>
+                        <div class="telem-card">
+                            <div class="telem-icon">💾</div>
+                            <div class="telem-val">4.2 MB</div>
+                            <div class="telem-key">Model Weight Size</div>
+                        </div>
+                    </div>
+
+                    <!-- Live Confidence Chart -->
+                    <div class="glass-card telem-chart-card">
+                        <div class="card-label">Live Confidence History</div>
+                        <div class="conf-chart-wrap">
+                            <canvas id="confHistChart" height="120"></canvas>
+                            <div class="chart-empty" id="chartEmpty">Run predictions to see confidence history</div>
+                        </div>
+                    </div>
+
+                    <!-- Console Log -->
+                    <div class="glass-card console-card">
+                        <div class="console-topbar">
+                            <div class="card-label" style="margin:0;">System Log</div>
+                            <button class="console-clear" id="clearConsole">Clear</button>
+                        </div>
+                        <div class="console-body" id="sysConsole">
+                            <div class="log-entry boot"><span class="log-ts">BOOT</span><span>AgriBot Engine initialized.</span></div>
+                            <div class="log-entry boot"><span class="log-ts">BOOT</span><span>PlantSeedNet weights loaded. Parameters: 2,148,943</span></div>
+                            <div class="log-entry boot"><span class="log-ts">BOOT</span><span>REST API active on port :5000</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay hidden" id="modal">
+        <div class="modal-box" id="modalBox">
+            <div class="modal-head">
+                <div>
+                    <div class="modal-tag" id="modalTag"></div>
+                    <h2 class="modal-title" id="modalTitle"></h2>
+                </div>
+                <button class="modal-x" id="modalClose">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+            <div class="modal-body" id="modalContent"></div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

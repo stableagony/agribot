@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+pip-wheel-metadata/
+
+# Virtual environments
+venv/
+env/
+.env
+.venv/
+
+# PyTorch model checkpoints — keep .pth tracked (small)
+# Uncomment below to exclude large checkpoints
+# models/*.pth
+
+# Dataset — EXCLUDE large binary/image data
+data/plant_seeds_dataset/train/
+data/plant_seeds_dataset/val/
+data/temp_plantvillage/
+data/cifar-10-batches-py/
+data/cifar-10-python.tar.gz
+
+# Large test images
+sample_test_seed.jpg
+test_seed.jpg
+test_real_plant.jpg
+
+# Generated outputs
+models/training_history.png
+models/confusion_matrix.png
+
+# Test files
+test_real_plant.jpg
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+desktop.ini
