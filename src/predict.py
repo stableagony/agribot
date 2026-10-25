@@ -16,24 +16,24 @@ def get_model():
     if _MODEL_CACHE is None:
         if not os.path.exists(MODEL_PATH):
             raise FileNotFoundError(f"Model checkpoint file not found at '{MODEL_PATH}'. Train the model first using 'python -m src.train'.")
-        print(f"[+] Loading PlantSeedNet model weights into PyTorch ({_DEVICE})...")
-        model = build_cnn_model(num_classes=15).to(_DEVICE)
+        print(f"[+] Loading PlantLeafNet model weights into PyTorch ({_DEVICE})...")
+        model = build_cnn_model(num_classes=len(PLANT_CLASSES)).to(_DEVICE)
         model.load_state_dict(torch.load(MODEL_PATH, map_location=_DEVICE))
         model.eval()
         _MODEL_CACHE = model
     return _MODEL_CACHE
 
-def verify_is_plant(img_pil, max_confidence):
+def verify_is_plant(img_pil, max_confidence, min_threshold=0.25):
     """
-    Validates whether the input image is actually a plant leaf or crop seed
+    Validates whether the input image is actually a plant leaf or crop leaf
     by analyzing color spectrums (Green/Brown/Yellow vegetation index)
     and model activation confidence thresholds.
     """
     # 1. Softmax Confidence Threshold
-    if max_confidence < 0.25:
-        return False, "Low model confidence. Image does not match known plant seed or foliage features."
+    if max_confidence < min_threshold:
+        return False, f"Low model confidence ({round(max_confidence * 100, 1)}% < {round(min_threshold * 100, 1)}%). Image does not match known plant leaf or foliage features."
 
-    # 2. Color Channel Analysis (HSV / RGB Green & Organic Seed Spectrum)
+    # 2. Color Channel Analysis (HSV / RGB Green & Organic Leaf Spectrum)
     img_rgb = img_pil.convert('RGB')
     stat = ImageStat.Stat(img_rgb)
     r, g, b = stat.mean
@@ -41,7 +41,7 @@ def verify_is_plant(img_pil, max_confidence):
     # Check for extreme mono-color/grayscale non-plant images (e.g. pure red/blue/black screens)
     color_std = np.std([r, g, b])
     
-    # Vegetation/Plant Seed Color Index (Plants & seeds have organic G/R balance)
+    # Vegetation/Plant Leaf Color Index (Plants & leaves have organic G/R balance)
     # Pure unnatural artificial colors (e.g. neon blue/purple or solid gray background)
     if b > (g + 35) and b > (r + 35): # Dominant artificial blue
         return False, "Non-plant image detected (dominant artificial blue color spectrum)."
@@ -49,7 +49,7 @@ def verify_is_plant(img_pil, max_confidence):
     if color_std < 3.0 and (r < 20 and g < 20 and b < 20): # Near pitch black
         return False, "Image too dark or blank. Unable to detect plant features."
 
-    return True, "Valid Plant / Seed Sample"
+    return True, "Valid Plant / Leaf Sample"
 
 def preprocess_image(image_input):
     """
@@ -73,9 +73,9 @@ def preprocess_image(image_input):
     tensor = transform(img_resized).unsqueeze(0).to(_DEVICE) # (1, 3, 128, 128)
     return tensor, img_rgb
 
-def predict_plant_disease(image_input):
+def predict_plant_disease(image_input, threshold=0.25):
     """
-    Runs plant verification + CNN forward pass to predict plant genus, seed type, disease status, and action plan.
+    Runs plant verification + CNN forward pass to predict plant genus, leaf type, disease status, and action plan.
     """
     model = get_model()
     tensor, raw_pil = preprocess_image(image_input)
@@ -88,7 +88,7 @@ def predict_plant_disease(image_input):
     confidence = float(probabilities[top_class_idx])
 
     # Perform Plant Validation Check
-    is_plant, plant_validation_msg = verify_is_plant(raw_pil, confidence)
+    is_plant, plant_validation_msg = verify_is_plant(raw_pil, confidence, min_threshold=threshold)
 
     # Top 3 probabilities
     top3_indices = probabilities.argsort()[-3:][::-1]
@@ -109,15 +109,25 @@ def predict_plant_disease(image_input):
 
     recommendations = []
     if not is_plant:
-        recommendations.append("⚠️ NON-PLANT DETECTED: The uploaded image does not appear to be a crop seed or plant leaf.")
-        recommendations.append("Please upload a clear photograph of a plant leaf, crop seedling, or seed sample.")
+        recommendations.append("⚠️ NON-PLANT DETECTED: The uploaded image does not appear to be a crop leaf or plant foliage.")
+        recommendations.append("Please upload a clear photograph of a plant leaf, crop foliage, or leaf sample.")
     elif is_healthy:
-        recommendations.append("Seed / Plant sample displays optimal healthy morphological structures.")
-        recommendations.append("Store seeds in sealed containers at 12-15°C temperature and <45% humidity.")
+        recommendations.append("Leaf and foliage sample displays optimal healthy morphological structures.")
+        recommendations.append("Maintain optimal irrigation, balanced N-P-K nutrient schedule, and canopy airflow.")
+        recommendations.append("Continue periodic visual field scouting for early pest or pathogen onset.")
     else:
         recommendations.append(f"Infection / Pathogen pattern detected: {disease_status}.")
-        recommendations.append("Quarantine affected seed crop samples immediately to prevent spore transmission.")
-        recommendations.append("Apply targeted bio-fungicide or copper sulfate spray as per agronomist recommendation.")
+        recommendations.append("Prune or quarantine heavily infected crop leaves to prevent fungal spore dispersal.")
+        if "Blight" in disease_status:
+            recommendations.append("Apply targeted copper hydroxide or mancozeb fungicide spray. Avoid overhead sprinkler irrigation.")
+        elif "Rust" in disease_status:
+            recommendations.append("Apply foliar triazole (propiconazole) fungicide. Inspect adjacent crop rows for stripe pustules.")
+        elif "Mildew" in disease_status:
+            recommendations.append("Spray potassium bicarbonate or wettable sulfur. Improve plant spacing for sunlight penetration.")
+        elif "Caterpillar" in disease_status:
+            recommendations.append("Deploy Bacillus thuringiensis (Bt) or spinosad bio-insecticide. Inspect undersides of leaves for egg clusters.")
+        else:
+            recommendations.append("Apply recommended organic fungicide or bactericide treatment as advised by local agronomy service.")
 
     result = {
         "success": True,

@@ -17,7 +17,7 @@
 ## 🏗️ Architecture
 
 ```
-PlantSeedNet (PyTorch CNN)
+PlantLeafNet (PyTorch CNN)
 ├── Conv Block 1  → 32 channels + BatchNorm + MaxPool
 ├── Conv Block 2  → 64 channels + BatchNorm + MaxPool
 ├── Conv Block 3  → 128 channels + Dropout(0.2)
@@ -121,7 +121,7 @@ agribot/
 │       └── app.js          # Interactive client-side JS
 ├── src/
 │   ├── config.py           # Hyperparameters & class definitions
-│   ├── model.py            # PlantSeedNet CNN architecture
+│   ├── model.py            # PlantLeafNet CNN architecture
 │   ├── dataset.py          # ImageFolder data loader & augmentations
 │   ├── train.py            # Training loop with checkpointing
 │   ├── predict.py          # Inference engine & plant verifier

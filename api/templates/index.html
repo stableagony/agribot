@@ -185,9 +185,9 @@
                                     <div class="idle-icon">🔬</div>
                                 </div>
                                 <h3>Awaiting Classification</h3>
-                                <p>Upload a leaf or seed photograph, or select a quick-test preset to run the CNN inference pipeline.</p>
+                                <p>Upload a plant leaf or crop photograph, or select a quick-test preset to run the CNN inference pipeline.</p>
                                 <div class="idle-chips">
-                                    <span class="model-chip">PlantSeedNet v2.4</span>
+                                    <span class="model-chip">PlantLeafNet v2.4</span>
                                     <span class="model-chip">15 Classes</span>
                                     <span class="model-chip">PyTorch CPU</span>
                                 </div>
@@ -230,7 +230,7 @@
                                 </div>
                                 <div class="diag-condition">
                                     <span class="cond-key">Diagnosed Condition</span>
-                                    <span class="cond-val" id="condVal">Healthy Seed Batch</span>
+                                    <span class="cond-val" id="condVal">Healthy Leaf Sample</span>
                                 </div>
                             </div>
 
@@ -272,8 +272,8 @@
                 <div class="neural-grid">
                     <div class="glass-card arch-intro">
                         <div class="card-label">Model Architecture</div>
-                        <h2>PlantSeedNet Deep CNN</h2>
-                        <p class="arch-desc">Custom convolutional neural network designed for 128×128 plant leaf and seed pathology classification. Features progressive channel expansion with batch normalization and global average pooling.</p>
+                        <h2>PlantLeafNet Deep CNN</h2>
+                        <p class="arch-desc">Custom convolutional neural network designed for 128×128 plant leaf and pathology classification. Features progressive channel expansion with batch normalization and global average pooling.</p>
 
                         <div class="pipeline">
                             <div class="pipe-node">
@@ -428,7 +428,7 @@
                         </div>
                         <div class="console-body" id="sysConsole">
                             <div class="log-entry boot"><span class="log-ts">BOOT</span><span>AgriBot Engine initialized.</span></div>
-                            <div class="log-entry boot"><span class="log-ts">BOOT</span><span>PlantSeedNet weights loaded. Parameters: 2,148,943</span></div>
+                            <div class="log-entry boot"><span class="log-ts">BOOT</span><span>PlantLeafNet weights loaded. Parameters: 2,148,943</span></div>
                             <div class="log-entry boot"><span class="log-ts">BOOT</span><span>REST API active on port :5000</span></div>
                         </div>
                     </div>

@@ -2,13 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class PlantSeedNet(nn.Module):
+class PlantLeafNet(nn.Module):
     """
-    Deep Convolutional Neural Network for Plant Seed Genus & Disease Classification.
+    Deep Convolutional Neural Network for Plant Leaf Genus & Disease Classification.
     Features 4 Convolutional Blocks with Batch Normalization, Max Pooling, and Dropout.
     """
     def __init__(self, num_classes=15):
-        super(PlantSeedNet, self).__init__()
+        super(PlantLeafNet, self).__init__()
         
         # Block 1: 3 -> 32 channels (128x128 -> 64x64)
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3, padding=1)
@@ -82,10 +82,10 @@ class PlantSeedNet(nn.Module):
         return x
 
 def build_cnn_model(num_classes=15):
-    return PlantSeedNet(num_classes=num_classes)
+    return PlantLeafNet(num_classes=num_classes)
 
 if __name__ == "__main__":
     model = build_cnn_model()
     dummy = torch.randn(2, 3, 128, 128)
     out = model(dummy)
-    print("PlantSeedNet Output Shape:", out.shape)
+    print("PlantLeafNet Output Shape:", out.shape)

@@ -5,7 +5,7 @@ from src.config import DATA_DIR, PLANT_CLASSES, IMG_WIDTH, IMG_HEIGHT
 
 def create_synthetic_plant_image(class_name, idx, is_train=True):
     """
-    Generates realistic plant seed / leaf disease pattern images with distinct color palettes,
+    Generates realistic plant leaf / disease pattern images with distinct color palettes,
     morphological shapes, texture noise, and spot pathology for testing & demonstration.
     """
     img = Image.new('RGB', (IMG_WIDTH, IMG_HEIGHT), color=(20, 30, 20))
@@ -64,11 +64,11 @@ def create_synthetic_plant_image(class_name, idx, is_train=True):
     img = img.filter(ImageFilter.GaussianBlur(radius=0.5))
     return img
 
-def build_plant_seeds_dataset():
+def build_plant_leaf_dataset():
     """
-    Initializes plant seed & disease dataset directory structure and populates sample images.
+    Initializes plant leaf & disease dataset directory structure and populates sample images.
     """
-    print("[+] Building Plant Seeds & Disease Dataset structure...")
+    print("[+] Building Plant Leaf & Disease Dataset structure...")
     train_dir = os.path.join(DATA_DIR, "train")
     val_dir = os.path.join(DATA_DIR, "val")
 
@@ -81,15 +81,15 @@ def build_plant_seeds_dataset():
         # Generate 20 train images and 5 val images per class
         for i in range(20):
             img = create_synthetic_plant_image(cls, i, is_train=True)
-            img.save(os.path.join(cls_train_path, f"seed_img_{i+1:03d}.jpg"))
+            img.save(os.path.join(cls_train_path, f"leaf_img_{i+1:03d}.jpg"))
 
         for i in range(5):
             img = create_synthetic_plant_image(cls, i, is_train=False)
             img.save(os.path.join(cls_val_path, f"val_img_{i+1:03d}.jpg"))
 
-    print(f"[OK] Generated {len(PLANT_CLASSES)} Plant Seed classes in '{DATA_DIR}'!")
+    print(f"[OK] Generated {len(PLANT_CLASSES)} Plant Leaf classes in '{DATA_DIR}'!")
     print(f"     Train directory: '{train_dir}'")
     print(f"     Val directory:   '{val_dir}'")
 
 if __name__ == "__main__":
-    build_plant_seeds_dataset()
+    build_plant_leaf_dataset()

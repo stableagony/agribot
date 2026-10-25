@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from src.config import BATCH_SIZE, EPOCHS, LEARNING_RATE, MODEL_PATH, PLOT_PATH
+from src.config import BATCH_SIZE, EPOCHS, LEARNING_RATE, MODEL_PATH, PLOT_PATH, PLANT_CLASSES
 from src.dataset import load_plant_dataloaders
 from src.model import build_cnn_model
 
@@ -21,7 +21,7 @@ def plot_training_history(train_accs, val_accs, train_losses, val_losses, save_p
     plt.subplot(1, 2, 1)
     plt.plot(epochs_range, train_accs, 'b-o', label='Train Accuracy')
     plt.plot(epochs_range, val_accs, 'g-s', label='Val Accuracy')
-    plt.title('Plant Seed Model Accuracy')
+    plt.title('Plant Leaf Model Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy (%)')
     plt.legend()
@@ -31,7 +31,7 @@ def plot_training_history(train_accs, val_accs, train_losses, val_losses, save_p
     plt.subplot(1, 2, 2)
     plt.plot(epochs_range, train_losses, 'b-o', label='Train Loss')
     plt.plot(epochs_range, val_losses, 'g-s', label='Val Loss')
-    plt.title('Plant Seed Model Loss')
+    plt.title('Plant Leaf Model Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
@@ -45,12 +45,12 @@ def plot_training_history(train_accs, val_accs, train_losses, val_losses, save_p
 def train():
     device = get_device()
     print("==================================================")
-    print(f"  AgriBot Plant Seed CNN Training Engine ({device}) ")
+    print(f"  AgriBot Plant Leaf CNN Training Engine ({device}) ")
     print("==================================================")
 
     train_loader, val_loader, val_dataset = load_plant_dataloaders(batch_size=BATCH_SIZE)
 
-    model = build_cnn_model(num_classes=15).to(device)
+    model = build_cnn_model(num_classes=len(PLANT_CLASSES)).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.5, patience=2)
@@ -117,7 +117,7 @@ def train():
             print(f"  [->] Saved new best model checkpoint (Val Acc: {best_val_acc:.2f}%) to {MODEL_PATH}")
 
     plot_training_history(train_accs, val_accs, train_losses, val_losses)
-    print("\n[OK] Plant Seed CNN Model Training Complete!")
+    print("\n[OK] Plant Leaf CNN Model Training Complete!")
     return model, val_loader
 
 if __name__ == "__main__":

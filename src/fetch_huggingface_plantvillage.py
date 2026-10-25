@@ -7,19 +7,19 @@ from src.config import DATA_DIR, PLANT_CLASSES
 CLASS_MAP = {
     "Tomato___Early_blight": "Solanum_Tomato_Early_Blight",
     "Tomato___Late_blight": "Solanum_Tomato_Late_Blight",
-    "Tomato___healthy": "Solanum_Tomato_Healthy_Seed",
+    "Tomato___healthy": "Solanum_Tomato_Healthy_Leaf",
     "Corn_(maize)___Common_rust_": "Zea_Corn_Common_Rust",
-    "Corn_(maize)___healthy": "Zea_Corn_Healthy_Seed",
-    "Soybean___healthy": "Glycine_Soybean_Healthy_Seed",
+    "Corn_(maize)___healthy": "Zea_Corn_Healthy_Leaf",
+    "Soybean___healthy": "Glycine_Soybean_Healthy_Leaf",
     "Peach___Bacterial_spot": "Gossypium_Cotton_Bacterial_Blight",
     "Potato___Early_blight": "Oryza_Rice_Brown_Spot",
-    "Potato___healthy": "Oryza_Rice_Healthy_Seed",
+    "Potato___healthy": "Oryza_Rice_Healthy_Leaf",
     "Pepper,_bell___Bacterial_spot": "Triticum_Wheat_Yellow_Rust",
-    "Pepper,_bell___healthy": "Triticum_Wheat_Healthy_Seed",
+    "Pepper,_bell___healthy": "Triticum_Wheat_Healthy_Leaf",
     "Apple___Apple_scab": "Helianthus_Sunflower_Powdery_Mildew",
-    "Apple___healthy": "Helianthus_Sunflower_Healthy_Seed",
+    "Apple___healthy": "Helianthus_Sunflower_Healthy_Leaf",
     "Grape___Black_rot": "Glycine_Soybean_Caterpillar_Damage",
-    "Grape___healthy": "Gossypium_Cotton_Healthy_Seed"
+    "Grape___healthy": "Gossypium_Cotton_Healthy_Leaf"
 }
 
 def download_hf_plantvillage():

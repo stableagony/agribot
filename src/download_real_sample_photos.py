@@ -5,10 +5,10 @@ from PIL import Image
 
 from src.config import DATA_DIR, PLANT_CLASSES
 
-# Direct public URLs of authentic photographic plant disease & crop seed samples
+# Direct public URLs of authentic photographic plant disease & crop leaf samples
 REAL_IMAGE_URLS = {
     "Solanum_Tomato_Early_Blight": [
-        "https://upload.wikimedia.org/wikipedia/commons/ thumb/8/87/Tomato_Early_Blight.JPG/640px-Tomato_Early_Blight.JPG",
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Tomato_Early_Blight.JPG/640px-Tomato_Early_Blight.JPG",
         "https://upload.wikimedia.org/wikipedia/commons/4/4b/Alternaria_solani_leaf.jpg"
     ],
     "Zea_Corn_Common_Rust": [

@@ -22,6 +22,8 @@ env/
 # models/*.pth
 
 # Dataset — EXCLUDE large binary/image data
+data/plant_leaf_dataset/train/
+data/plant_leaf_dataset/val/
 data/plant_seeds_dataset/train/
 data/plant_seeds_dataset/val/
 data/temp_plantvillage/

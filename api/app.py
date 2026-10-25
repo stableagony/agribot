@@ -4,10 +4,10 @@ import base64
 import random
 import numpy as np
 from PIL import Image
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 
-from src.config import BASE_DIR, DATA_DIR, MODEL_PATH, PLANT_CLASSES, PLANT_GENUS_DETAILS
+from src.config import BASE_DIR, DATA_DIR, MODELS_DIR, MODEL_PATH, PLANT_CLASSES, PLANT_GENUS_DETAILS, CLASS_TO_DETAILS
 from src.predict import predict_plant_disease
 
 app = Flask(__name__, 
@@ -16,6 +16,15 @@ app = Flask(__name__,
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 CORS(app)
+
+PRESET_MAP = {
+    "tomato_early": "Solanum_Tomato_Early_Blight",
+    "corn_rust": "Zea_Corn_Common_Rust",
+    "rice_spot": "Oryza_Rice_Brown_Spot",
+    "wheat_rust": "Triticum_Wheat_Yellow_Rust",
+    "soy_healthy": "Glycine_Soybean_Healthy_Leaf",
+    "sunflower": "Helianthus_Sunflower_Powdery_Mildew"
+}
 
 @app.after_request
 def add_header(response):
@@ -26,27 +35,41 @@ def add_header(response):
 def home():
     return render_template('index.html')
 
+@app.route('/models/<path:filename>')
+def serve_models(filename):
+    """
+    Serves model assets (training history plot, confusion matrix, etc.) to the web UI.
+    """
+    return send_from_directory(MODELS_DIR, filename)
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     model_exists = os.path.exists(MODEL_PATH)
     return jsonify({
         "status": "online",
         "service": "AgriBot CNN Plant & Disease Classifier",
-        "dataset": "Plant & Seed Pathological Dataset",
+        "dataset": "Plant & Leaf Pathological Dataset",
         "model_loaded": model_exists,
-        "model_path": MODEL_PATH
+        "model_path": MODEL_PATH,
+        "classes_count": len(PLANT_CLASSES)
     })
 
 @app.route('/api/predict', methods=['POST'])
 def predict():
     try:
         image = None
+        threshold = 0.25
         
         # 1. File Upload
         if 'image' in request.files:
             file = request.files['image']
             if file.filename != '':
                 image = Image.open(file.stream)
+            if 'threshold' in request.form:
+                try:
+                    threshold = float(request.form['threshold']) / 100.0 if float(request.form['threshold']) > 1.0 else float(request.form['threshold'])
+                except (ValueError, TypeError):
+                    threshold = 0.25
         
         # 2. Base64 Upload
         elif request.is_json and 'image_base64' in request.json:
@@ -55,11 +78,17 @@ def predict():
                 b64_str = b64_str.split(',')[1]
             img_bytes = base64.b64decode(b64_str)
             image = Image.open(io.BytesIO(img_bytes))
+            if 'threshold' in request.json:
+                try:
+                    t_val = float(request.json['threshold'])
+                    threshold = t_val / 100.0 if t_val > 1.0 else t_val
+                except (ValueError, TypeError):
+                    threshold = 0.25
 
         if image is None:
             return jsonify({"success": False, "error": "No image file or base64 data provided"}), 400
 
-        result = predict_plant_disease(image)
+        result = predict_plant_disease(image, threshold=threshold)
         return jsonify(result)
 
     except Exception as e:
@@ -70,24 +99,36 @@ def predict():
 @app.route('/api/sample', methods=['GET'])
 def get_sample_image():
     """
-    Returns a random sample image from the plant seeds validation dataset.
+    Returns a sample image from the plant leaf validation dataset.
+    Supports ?preset=<name> or ?class=<class_name> to pick specific classes.
     """
     try:
         val_dir = os.path.join(DATA_DIR, "val")
         if not os.path.exists(val_dir):
-            from src.build_plant_dataset import build_plant_seeds_dataset
-            build_plant_seeds_dataset()
+            from src.build_plant_dataset import build_plant_leaf_dataset
+            build_plant_leaf_dataset()
 
         classes = [d for d in os.listdir(val_dir) if os.path.isdir(os.path.join(val_dir, d))]
         if not classes:
             return jsonify({"success": False, "error": "Validation dataset empty"}), 500
 
-        chosen_class = random.choice(classes)
+        preset_param = request.args.get('preset')
+        class_param = request.args.get('class')
+
+        target_class = None
+        if preset_param and preset_param in PRESET_MAP:
+            mapped_cls = PRESET_MAP[preset_param]
+            if mapped_cls in classes:
+                target_class = mapped_cls
+        elif class_param and class_param in classes:
+            target_class = class_param
+
+        chosen_class = target_class if target_class else random.choice(classes)
         class_folder = os.path.join(val_dir, chosen_class)
         images = [f for f in os.listdir(class_folder) if f.lower().endswith(('.jpg', '.jpeg', '.png'))]
 
         if not images:
-            return jsonify({"success": False, "error": "No sample images found"}), 500
+            return jsonify({"success": False, "error": f"No sample images found for class {chosen_class}"}), 500
 
         chosen_img_name = random.choice(images)
         chosen_img_path = os.path.join(class_folder, chosen_img_name)
@@ -98,8 +139,7 @@ def get_sample_image():
         pil_img.save(buffered, format="JPEG")
         img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
 
-        class_idx = PLANT_CLASSES.index(chosen_class) if chosen_class in PLANT_CLASSES else 0
-        mapped_info = PLANT_GENUS_DETAILS.get(class_idx, {})
+        mapped_info = CLASS_TO_DETAILS.get(chosen_class, {})
 
         return jsonify({
             "success": True,
