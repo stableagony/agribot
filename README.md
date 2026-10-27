@@ -34,12 +34,11 @@ PlantLeafNet (PyTorch CNN)
 | Genus | Crop | Conditions |
 |---|---|---|
 | *Solanum* | Tomato | Healthy, Early Blight, Late Blight |
-| *Zea* | Corn / Maize | Healthy, Common Rust |
-| *Oryza* | Rice | Healthy, Brown Spot |
-| *Triticum* | Wheat | Healthy, Yellow Rust |
-| *Glycine* | Soybean | Healthy, Caterpillar Damage |
-| *Gossypium* | Cotton | Healthy, Bacterial Blight |
-| *Helianthus* | Sunflower | Healthy, Powdery Mildew |
+| *Zea* | Corn / Maize | Healthy, Common Rust, Northern Leaf Blight |
+| *Solanum* | Potato | Healthy, Early Blight, Late Blight |
+| *Capsicum* | Bell Pepper | Healthy, Bacterial Spot |
+| *Malus* | Apple | Healthy, Apple Scab |
+| *Vitis* | Grape | Healthy, Black Rot |
 
 ---
 

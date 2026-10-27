@@ -19,11 +19,14 @@ CORS(app)
 
 PRESET_MAP = {
     "tomato_early": "Solanum_Tomato_Early_Blight",
+    "tomato_late": "Solanum_Tomato_Late_Blight",
+    "tomato_healthy": "Solanum_Tomato_Healthy",
     "corn_rust": "Zea_Corn_Common_Rust",
-    "rice_spot": "Oryza_Rice_Brown_Spot",
-    "wheat_rust": "Triticum_Wheat_Yellow_Rust",
-    "soy_healthy": "Glycine_Soybean_Healthy_Leaf",
-    "sunflower": "Helianthus_Sunflower_Powdery_Mildew"
+    "corn_blight": "Zea_Corn_Northern_Leaf_Blight",
+    "potato_blight": "Solanum_Potato_Early_Blight",
+    "pepper_spot": "Capsicum_Pepper_Bacterial_Spot",
+    "apple_scab": "Malus_Apple_Scab",
+    "grape_rot": "Vitis_Grape_Black_Rot"
 }
 
 @app.after_request

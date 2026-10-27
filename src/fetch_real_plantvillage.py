@@ -1,6 +1,7 @@
 import os
 import shutil
 import glob
+import stat
 import subprocess
 from PIL import Image
 
@@ -8,42 +9,53 @@ from src.config import BASE_DIR, DATA_DIR, PLANT_CLASSES
 
 TEMP_CLONE_DIR = os.path.join(BASE_DIR, "data", "temp_plantvillage")
 
-# Mapping PlantVillage directory names to AgriBot 15 Plant & Leaf Classes
+def robust_rmtree(path):
+    if not os.path.exists(path):
+        return
+    def _onerror(func, p, excinfo):
+        try:
+            os.chmod(p, stat.S_IWRITE)
+            func(p)
+        except Exception:
+            pass
+    shutil.rmtree(path, onerror=_onerror)
+
+# 1-to-1 Authentic PlantVillage directory names to AgriBot 15 Classes
 CLASS_MAPPING = {
+    "Pepper,_bell___Bacterial_spot": "Capsicum_Pepper_Bacterial_Spot",
+    "Pepper,_bell___healthy": "Capsicum_Pepper_Healthy",
+    "Apple___healthy": "Malus_Apple_Healthy",
+    "Apple___Apple_scab": "Malus_Apple_Scab",
+    "Potato___Early_blight": "Solanum_Potato_Early_Blight",
+    "Potato___healthy": "Solanum_Potato_Healthy",
+    "Potato___Late_blight": "Solanum_Potato_Late_Blight",
     "Tomato___Early_blight": "Solanum_Tomato_Early_Blight",
+    "Tomato___healthy": "Solanum_Tomato_Healthy",
     "Tomato___Late_blight": "Solanum_Tomato_Late_Blight",
-    "Tomato___healthy": "Solanum_Tomato_Healthy_Leaf",
+    "Grape___Black_rot": "Vitis_Grape_Black_Rot",
+    "Grape___healthy": "Vitis_Grape_Healthy",
     "Corn_(maize)___Common_rust_": "Zea_Corn_Common_Rust",
-    "Corn_(maize)___healthy": "Zea_Corn_Healthy_Leaf",
-    "Soybean___healthy": "Glycine_Soybean_Healthy_Leaf",
-    "Peach___Bacterial_spot": "Gossypium_Cotton_Bacterial_Blight",
-    "Potato___Early_blight": "Oryza_Rice_Brown_Spot",
-    "Potato___healthy": "Oryza_Rice_Healthy_Leaf",
-    "Pepper,_bell___Bacterial_spot": "Triticum_Wheat_Yellow_Rust",
-    "Pepper,_bell___healthy": "Triticum_Wheat_Healthy_Leaf",
-    "Apple___Apple_scab": "Helianthus_Sunflower_Powdery_Mildew",
-    "Apple___healthy": "Helianthus_Sunflower_Healthy_Leaf",
-    "Grape___Black_rot": "Glycine_Soybean_Caterpillar_Damage",
-    "Grape___healthy": "Gossypium_Cotton_Healthy_Leaf"
+    "Corn_(maize)___healthy": "Zea_Corn_Healthy",
+    "Corn_(maize)___Northern_Leaf_Blight": "Zea_Corn_Northern_Leaf_Blight"
 }
 
-def fetch_and_populate_real_images():
+def fetch_and_populate_real_images(train_per_class=100, val_per_class=25):
     """
     Downloads authentic real photographic plant disease images from PlantVillage dataset repo
-    and organizes real photographic images into data/plant_leaf_dataset/train and val.
+    and organizes them into data/plant_leaf_dataset/train and val across 15 genuine classes.
     """
     print("==================================================")
-    print("  [+] Fetching Real Photographic Plant Disease Images ")
+    print("  [+] Fetching Real Photographic PlantVillage Images ")
     print("==================================================")
 
-    if os.path.exists(TEMP_CLONE_DIR):
-        shutil.rmtree(TEMP_CLONE_DIR, ignore_errors=True)
-
-    print("[+] Shallow cloning PlantVillage real photo dataset repository...")
-    cmd = ["git", "clone", "--depth", "1", "https://github.com/spMohanty/PlantVillage-Dataset.git", TEMP_CLONE_DIR]
-    subprocess.run(cmd, check=True)
-
     raw_color_dir = os.path.join(TEMP_CLONE_DIR, "raw", "color")
+    if not os.path.exists(raw_color_dir):
+        robust_rmtree(TEMP_CLONE_DIR)
+        print("[+] Shallow cloning PlantVillage dataset repository (~300MB)...")
+        cmd = ["git", "clone", "--depth", "1", "https://github.com/spMohanty/PlantVillage-Dataset.git", TEMP_CLONE_DIR]
+        subprocess.run(cmd, check=True)
+    else:
+        print("[+] Using existing cloned repository in data/temp_plantvillage...")
     if not os.path.exists(raw_color_dir):
         print(f"[!] Warning: Raw color directory not found at {raw_color_dir}")
         return
@@ -51,9 +63,9 @@ def fetch_and_populate_real_images():
     train_dir = os.path.join(DATA_DIR, "train")
     val_dir = os.path.join(DATA_DIR, "val")
 
-    # Clear previous mock directory contents
-    shutil.rmtree(train_dir, ignore_errors=True)
-    shutil.rmtree(val_dir, ignore_errors=True)
+    # Clear previous directory contents
+    robust_rmtree(train_dir)
+    robust_rmtree(val_dir)
     os.makedirs(train_dir, exist_ok=True)
     os.makedirs(val_dir, exist_ok=True)
 
@@ -62,6 +74,7 @@ def fetch_and_populate_real_images():
     for source_folder, target_cls in CLASS_MAPPING.items():
         src_path = os.path.join(raw_color_dir, source_folder)
         if not os.path.exists(src_path):
+            print(f"[!] Source folder '{source_folder}' not found. Skipping.")
             continue
 
         target_train = os.path.join(train_dir, target_cls)
@@ -71,28 +84,31 @@ def fetch_and_populate_real_images():
 
         images = glob.glob(os.path.join(src_path, "*.[jJ][pP][gG]")) + glob.glob(os.path.join(src_path, "*.[pP][nN][gG]"))
         if not images:
+            print(f"[!] No images in '{source_folder}'. Skipping.")
             continue
 
-        # Split 25 real photos for training and 5 real photos for validation per class
-        train_samples = images[:25]
-        val_samples = images[25:30] if len(images) >= 30 else images[25:]
+        train_samples = images[:train_per_class]
+        val_samples = images[train_per_class:train_per_class + val_per_class]
 
         for i, img_p in enumerate(train_samples):
-            dest = os.path.join(target_train, f"real_plant_{i+1:03d}.jpg")
+            dest = os.path.join(target_train, f"pv_leaf_{i+1:04d}.jpg")
             shutil.copy(img_p, dest)
             total_real_copied += 1
 
         for i, img_p in enumerate(val_samples):
-            dest = os.path.join(target_val, f"real_plant_val_{i+1:03d}.jpg")
+            dest = os.path.join(target_val, f"pv_leaf_val_{i+1:04d}.jpg")
             shutil.copy(img_p, dest)
             total_real_copied += 1
 
-    # Cleanup temporary repo
-    shutil.rmtree(TEMP_CLONE_DIR, ignore_errors=True)
+        print(f"  [OK] {target_cls:<35}: {len(train_samples)} train, {len(val_samples)} val")
 
-    print(f"\n[OK] Successfully populated dataset with {total_real_copied} authentic real photographic plant disease images!")
-    print(f"     Real Plant Dataset Train: '{train_dir}'")
-    print(f"     Real Plant Dataset Val:   '{val_dir}'")
+    # Cleanup temporary repo to save disk space
+    print("[+] Cleaning up temporary clone directory...")
+    robust_rmtree(TEMP_CLONE_DIR)
+
+    print(f"\n[OK] Successfully populated dataset with {total_real_copied} authentic PlantVillage images!")
+    print(f"     Train directory: '{train_dir}'")
+    print(f"     Val directory:   '{val_dir}'")
 
 if __name__ == "__main__":
     fetch_and_populate_real_images()

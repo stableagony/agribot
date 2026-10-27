@@ -14,31 +14,27 @@ def create_synthetic_plant_image(class_name, idx, is_train=True):
     # Color palette & shape based on plant genus & disease state
     if "Zea_Corn" in class_name:
         bg_color = (230, 200, 80) if "Healthy" in class_name else (140, 90, 30)
-        spot_color = (180, 50, 20) if "Rust" in class_name else None
+        spot_color = (180, 50, 20) if "Rust" in class_name else ((70, 70, 40) if "Blight" in class_name else None)
         shape = "ellipse"
     elif "Solanum_Tomato" in class_name:
         bg_color = (40, 180, 60) if "Healthy" in class_name else (90, 110, 40)
         spot_color = (60, 40, 20) if "Blight" in class_name else None
         shape = "leaf"
-    elif "Oryza_Rice" in class_name:
-        bg_color = (220, 210, 160) if "Healthy" in class_name else (130, 110, 70)
-        spot_color = (80, 40, 10) if "Spot" in class_name else None
-        shape = "grain"
-    elif "Triticum_Wheat" in class_name:
-        bg_color = (210, 170, 70) if "Healthy" in class_name else (180, 140, 30)
-        spot_color = (220, 180, 10) if "Rust" in class_name else None
-        shape = "grain"
-    elif "Glycine_Soybean" in class_name:
-        bg_color = (190, 180, 100) if "Healthy" in class_name else (100, 120, 50)
-        spot_color = (30, 30, 30) if "Damage" in class_name else None
-        shape = "ellipse"
-    elif "Gossypium_Cotton" in class_name:
-        bg_color = (240, 240, 230) if "Healthy" in class_name else (160, 160, 130)
-        spot_color = (40, 80, 30) if "Blight" in class_name else None
-        shape = "cotton"
-    else: # Sunflower
-        bg_color = (50, 160, 70) if "Healthy" in class_name else (80, 120, 80)
-        spot_color = (230, 230, 230) if "Mildew" in class_name else None
+    elif "Solanum_Potato" in class_name:
+        bg_color = (45, 170, 55) if "Healthy" in class_name else (85, 100, 35)
+        spot_color = (75, 45, 15) if "Blight" in class_name else None
+        shape = "leaf"
+    elif "Capsicum_Pepper" in class_name:
+        bg_color = (35, 160, 50) if "Healthy" in class_name else (95, 120, 45)
+        spot_color = (40, 30, 15) if "Spot" in class_name else None
+        shape = "leaf"
+    elif "Malus_Apple" in class_name:
+        bg_color = (50, 165, 65) if "Healthy" in class_name else (110, 130, 50)
+        spot_color = (50, 60, 30) if "Scab" in class_name else None
+        shape = "leaf"
+    else: # Vitis Grape
+        bg_color = (55, 175, 70) if "Healthy" in class_name else (100, 115, 60)
+        spot_color = (35, 20, 20) if "Rot" in class_name else None
         shape = "leaf"
 
     # Draw Base Object
